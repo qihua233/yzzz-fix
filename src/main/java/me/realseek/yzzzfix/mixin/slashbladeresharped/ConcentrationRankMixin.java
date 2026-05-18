@@ -22,7 +22,7 @@ public abstract class ConcentrationRankMixin {
         float currentLevel = currentRaw / (float) ConcentrationRank.UnitCapacity;
         int currentRank = IConcentrationRank.ConcentrationRanks.getRankFromLevel(currentLevel).level;
 
-        if (currentRank >= 7 && point < currentRaw) {
+        if (currentRank >= 7 && point < currentRaw) { // 7 = SSS rank
             ci.cancel();
         }
     }
