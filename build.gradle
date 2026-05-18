@@ -63,19 +63,29 @@ dependencies {
                     'Nameless Trinkets-1.20.1-1.7.8.jar',
                     'curios-forge-5.14.1+1.20.1.jar',
                     'reliquary-1.20.1-2.0.45.1248.jar',
-                    'Lychee-1.20.1-forge-5.1.14.jar'
+                    'Lychee-1.20.1-forge-5.1.14.jar',
+                    'mowziesmobs-1.7.3.jar',
+                    'Apotheosis-1.20.1-7.4.3.jar',
+                    'immortalers_delight-1.20.1-forge-1.1.1.jar',
+                    'goety-2.5.46.3.jar',
+                    'immortalers_delight-1.20.1-forge-1.1.1.jar'
             ]
     )
+
     compileOnly fg.deobf(files('libs/Nameless Trinkets-1.20.1-1.7.8.jar'))
     compileOnly fg.deobf(files('libs/curios-forge-5.14.1+1.20.1.jar'))
     compileOnly fg.deobf(files('libs/reliquary-1.20.1-2.0.45.1248.jar'))
     compileOnly fg.deobf(files('libs/Lychee-1.20.1-forge-5.1.14.jar'))
+    compileOnly fg.deobf(files("libs/mowziesmobs-1.7.3.jar"))
+    compileOnly fg.deobf(files("libs/Apotheosis-1.20.1-7.4.3.jar"))
+    compileOnly fg.deobf(files("libs/immortalers_delight-1.20.1-forge-1.1.1.jar"))
+    compileOnly fg.deobf(files("libs/goety-2.5.46.3.jar"))
+    compileOnly fg.deobf(files("libs/immortalers_delight-1.20.1-forge-1.1.1.jar"))
     compileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
-
 // Suppress Mixin AP target validator errors for mod classes not on compile classpath.
 // All mod-class mixins use remap=false; runtime MixinPlugin handles target validation.
 compileJava {

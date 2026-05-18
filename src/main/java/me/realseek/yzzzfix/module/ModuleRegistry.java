@@ -77,6 +77,7 @@ public final class ModuleRegistry {
             module("celestial_ench", "Celestial Ench Fix", "celestial_ench_fix", List.of()),
             module("endinglib", "EndingLib Fix", "endinglib_fix", List.of("endinglib")),
             module("eidolon_hearts", "Eidolon Hearts Fix", "eidolon_hearts_fix", List.of("eidolon")),
+            module("goety", "Goety Fix", "goety_fix", List.of("goety")),
             module(
                     "celestial_forge",
                     "Celestial Forge Fix",
