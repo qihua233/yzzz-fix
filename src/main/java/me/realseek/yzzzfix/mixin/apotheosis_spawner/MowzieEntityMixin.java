@@ -1,6 +1,5 @@
 package me.realseek.yzzzfix.mixin.apotheosis_spawner;
 
-import com.bobmowzie.mowziesmobs.server.entity.MowzieEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.LevelAccessor;
 import org.apache.logging.log4j.LogManager;
@@ -23,18 +22,18 @@ import java.lang.reflect.Field;
  * 采用反射（结合 volatile 和双重检查锁缓存 Field）提取其内部包裹的真实 {@code LevelAccessor}，
  * 并将其替换给原方法，从而保证强转成功，同时完美保留神化刷怪笼的强化属性。</p>
  */
-@SuppressWarnings({"UnresolvedMixinReference", "unchecked"})
+@SuppressWarnings("UnresolvedMixinReference")
 @Mixin(targets = "com.bobmowzie.mowziesmobs.server.entity.MowzieEntity", remap = false)
 public class MowzieEntityMixin {
 
     @Unique
-    private static final Logger pathfinderplus$LOGGER = LogManager.getLogger("PathfinderPlusFix");
+    private static final Logger yzzzfix$LOGGER = LogManager.getLogger("YzzzFix");
 
     @Unique
-    private static final Object pathfinderplus$FIELD_INIT_LOCK = new Object();
+    private static final Object yzzzfix$FIELD_INIT_LOCK = new Object();
 
     @Unique
-    private static volatile Field pathfinderplus$wrappedLevelField;
+    private static volatile Field yzzzfix$wrappedLevelField;
 
     @ModifyVariable(
             method = "spawnPredicate",
@@ -42,7 +41,7 @@ public class MowzieEntityMixin {
             argsOnly = true,
             remap = false // 目标是第三方 Mod 的方法，必须设为 false 防止混淆器报错
     )
-    private static LevelAccessor pathfinderplus$fixLyingLevelCast(LevelAccessor level) {
+    private static LevelAccessor yzzzfix$fixLyingLevelCast(LevelAccessor level) {
         if (level == null) {
             return null;
         }
@@ -50,9 +49,9 @@ public class MowzieEntityMixin {
         // 仅当传入的世界是神化的模拟世界时才进行介入 (同样避免直接引用 LyingLevel.class)
         if (level.getClass().getName().endsWith("LyingLevel")) {
             try {
-                pathfinderplus$initFieldsIfNeeded(level.getClass());
+                yzzzfix$initFieldsIfNeeded(level.getClass());
 
-                Field field = pathfinderplus$wrappedLevelField;
+                Field field = yzzzfix$wrappedLevelField;
                 if (field != null) {
                     Object realLevel = field.get(level);
 
@@ -62,7 +61,7 @@ public class MowzieEntityMixin {
                     }
                 }
             } catch (Exception e) {
-                pathfinderplus$LOGGER.warn("[PathfinderPlus] Apotheosis LyingLevel reflection failed, falling back to original logic.", e);
+                yzzzfix$LOGGER.warn("[YzzzFix] Apotheosis LyingLevel reflection failed, falling back to original logic.", e);
             }
         }
 
@@ -70,12 +69,12 @@ public class MowzieEntityMixin {
     }
 
     @Unique
-    private static void pathfinderplus$initFieldsIfNeeded(Class<?> lyingLevelClass) {
-        if (pathfinderplus$wrappedLevelField != null) {
+    private static void yzzzfix$initFieldsIfNeeded(Class<?> lyingLevelClass) {
+        if (yzzzfix$wrappedLevelField != null) {
             return;
         }
-        synchronized (pathfinderplus$FIELD_INIT_LOCK) {
-            if (pathfinderplus$wrappedLevelField != null) {
+        synchronized (yzzzfix$FIELD_INIT_LOCK) {
+            if (yzzzfix$wrappedLevelField != null) {
                 return;
             }
             try {
@@ -88,9 +87,9 @@ public class MowzieEntityMixin {
                         break;
                     }
                 }
-                pathfinderplus$wrappedLevelField = targetField;
+                yzzzfix$wrappedLevelField = targetField;
             } catch (Exception e) {
-                pathfinderplus$LOGGER.warn("[PathfinderPlus] Failed to initialize LyingLevel reflection field.", e);
+                yzzzfix$LOGGER.warn("[YzzzFix] Failed to initialize LyingLevel reflection field.", e);
             }
         }
     }
