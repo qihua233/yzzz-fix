@@ -100,7 +100,15 @@ public final class ModuleRegistry {
             module("slashbladeresharped", "SlashBlade SSS Fix", "slashbladeresharped_fix", List.of("slashblade")),
             module("magnet_fix", "Magnet Throw Filter", "magnet_fix", List.of()),
             module("enigmaticaddons", "Enigmatic Addons Fix", "enigmaticaddons_fix", List.of("enigmaticlegacy")),
-            module("farmingforblockheads", "Farming for Blockheads Fix", "farmingforblockheads_fix", List.of("farmingforblockheads"))
+            module(
+                    "farmingforblockheads",
+                    "Farming for Blockheads Fix",
+                    "farmingforblockheads_fix",
+                    List.of("farmingforblockheads"),
+                    List.of(),
+                    me.realseek.yzzzfix.module.farmingforblockheads_jei.FarmingForBlockheadsModule.INSTANCE
+            ),
+            module("cthulhufishing", "CthulhuFishing Fix", "cthulhufishing_fix", List.of("cthulhufishing"))
     );
 
     private ModuleRegistry() {
