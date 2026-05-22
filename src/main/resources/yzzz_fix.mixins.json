@@ -63,6 +63,7 @@
   "client": [
     "apotheosis_spawner.LevelRendererMixin",
     "eidolon_hearts.EidolonHeartsMixin",
+    "elementalcombat_jade.CombatDataLayerComponentMixin",
     "forbidden_arcanus.ForbiddenArcanusJEIPluginMixin",
     "immortalers_delight.JEIImmortalersDelightPluginMixin"
   ],

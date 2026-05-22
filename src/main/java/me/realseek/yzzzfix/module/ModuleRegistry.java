@@ -108,7 +108,15 @@ public final class ModuleRegistry {
                     List.of(),
                     me.realseek.yzzzfix.module.farmingforblockheads_jei.FarmingForBlockheadsModule.INSTANCE
             ),
-            module("cthulhufishing", "CthulhuFishing Fix", "cthulhufishing_fix", List.of("cthulhufishing"))
+            module("cthulhufishing", "CthulhuFishing Fix", "cthulhufishing_fix", List.of("cthulhufishing")),
+            module(
+                    "elementalcombat_jade",
+                    "Elemental Combat Jade Fix",
+                    "elementalcombat_jade_fix",
+                    List.of("elementalcombat"),
+                    List.of(),
+                    me.realseek.yzzzfix.module.elementalcombat_jade.ElementalCombatJadeModule.INSTANCE
+            )
     );
 
     private ModuleRegistry() {
