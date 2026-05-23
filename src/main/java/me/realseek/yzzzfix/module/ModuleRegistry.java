@@ -116,6 +116,18 @@ public final class ModuleRegistry {
                     List.of("elementalcombat"),
                     List.of(),
                     me.realseek.yzzzfix.module.elementalcombat_jade.ElementalCombatJadeModule.INSTANCE
+            ),
+            module(
+                    "maid_targeting",
+                    "Maid Boss Targeting Fix",
+                    "maid_targeting",
+                    List.of("touhou_little_maid"),
+                    List.of(
+                            "com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.sensor.MaidNearestLivingEntitySensor",
+                            "com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid",
+                            "com.github.tartaricacid.touhoulittlemaid.entity.misc.DefaultMonsterType"
+                    ),
+                    ModuleRuntimeHooks.NOOP
             )
     );
 
