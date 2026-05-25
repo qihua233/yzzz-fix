@@ -14,7 +14,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *
  * <p>原版 {@code sendSEUpdatePacket} 仅将数据单播 (sendTo) 给玩家本人，
  * 导致其他玩家无法通过探查类模组或游戏机制读取其真实的灵魂能量。
- * 本修复将其拦截并重定向为全局广播 (sendToALL)，实现联机环境下的数据互通。</p>
+ * 本修复将其拦截并重定向为全局广播 (sendToALL)。</p>
+ *
+ * <p>客户端由 {@link SEUpdatePacketMixin} 配合按 packet.PlayerUUID
+ * 查找对应玩家实体写入，避免广播时本地 HUD 被他人数据覆盖。</p>
  */
 @Mixin(value = SEHelper.class, remap = false)
 public class SEHelperMixin {
@@ -22,10 +25,8 @@ public class SEHelperMixin {
     @Inject(method = "sendSEUpdatePacket", at = @At("HEAD"), cancellable = true)
     private static void yzzzfix$broadcastSEUpdatePacket(Player player, CallbackInfo ci) {
         if (player != null && !player.level().isClientSide()) {
-            // 劫持原版的单播，替换为向当前服务器所有人广播
             ModNetwork.sendToALL(new SEUpdatePacket(player));
         }
-        // 取消原方法的执行，防止重复发包
         ci.cancel();
     }
 }

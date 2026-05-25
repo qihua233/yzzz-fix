@@ -247,51 +247,204 @@ public abstract class NecroBrazierBlockEntityMixin extends ModBlockEntity {
         }
 
         Container container = this.getContainer();
-        int targetSlot = -1;
-        int toAdd = 0;
+        int containerSize = container.getContainerSize();
 
-        for (int i = 0; i < container.getContainerSize(); ++i) {
+        // 收集空格和同种物品格
+        int emptySlot = -1;
+        int sameItemSlot = -1;
+        int spaceInSameSlot = 0;
+        int emptyCount = 0;
+        for (int i = 0; i < containerSize; i++) {
             ItemStack slotStack = container.getItem(i);
-            if (!slotStack.isEmpty() && ItemStack.isSameItemSameTags(slotStack, stack)) {
+            if (slotStack.isEmpty()) {
+                if (emptySlot == -1) emptySlot = i;
+                emptyCount++;
+            } else if (sameItemSlot == -1 && ItemStack.isSameItemSameTags(slotStack, stack)) {
                 int space = stack.getMaxStackSize() - slotStack.getCount();
                 if (space > 0) {
-                    targetSlot = i;
-                    toAdd = Math.min(space, stack.getCount());
-                    break;
+                    sameItemSlot = i;
+                    spaceInSameSlot = space;
                 }
             }
         }
-        if (targetSlot == -1) {
-            for (int i = 0; i < container.getContainerSize(); ++i) {
-                if (container.getItem(i).isEmpty()) {
-                    targetSlot = i;
-                    toAdd = stack.getCount();
-                    break;
-                }
-            }
-        }
-        if (targetSlot == -1 || toAdd == 0) {
+
+        if (emptySlot == -1 && sameItemSlot == -1) {
             cir.setReturnValue(false);
             return;
         }
 
-        SimpleContainer simulated = new SimpleContainer(container.getContainerSize());
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            if (i == targetSlot) {
-                ItemStack copy = stack.copy();
-                copy.setCount(container.getItem(i).getCount() + toAdd);
-                simulated.setItem(i, copy);
-            } else {
-                simulated.setItem(i, container.getItem(i).copy());
+        // 候选A：全量放入第一个空格
+        // 候选B：堆叠到同种格
+        // 候选C：拆分到多个空格（每格 1 个），用于无序放入 + 重复材料场景（如 A+C+B(2)）
+        SimpleContainer simEmpty = null;
+        SimpleContainer simStack = null;
+        SimpleContainer simSplit = null;
+        BrazierRecipe recipeEmpty = null;
+        BrazierRecipe recipeStack = null;
+        BrazierRecipe recipeSplit = null;
+        int splitCount = 0;
+
+        if (emptySlot != -1) {
+            simEmpty = new SimpleContainer(containerSize);
+            for (int i = 0; i < containerSize; i++) {
+                if (i == emptySlot) {
+                    ItemStack copy = stack.copy();
+                    copy.setCount(stack.getCount());
+                    simEmpty.setItem(i, copy);
+                } else {
+                    simEmpty.setItem(i, container.getItem(i).copy());
+                }
+            }
+            if (this.level != null) {
+                Container dummy = yzzzfix$getDummyContainer(simEmpty);
+                recipeEmpty = this.level.getRecipeManager()
+                        .getAllRecipesFor((RecipeType<BrazierRecipe>) ModRecipeSerializer.BRAZIER_TYPE.get())
+                        .stream().filter(r -> r.matches(dummy, this.level)).findFirst().orElse(null);
+            }
+
+            // 候选C：手中数量 > 1 且空格 >= 2 时，尝试拆分（每格 1 个），解决无序放入 B(2) 导致配方不可见的问题
+            if (recipeEmpty == null && stack.getCount() > 1 && emptyCount >= 2) {
+                splitCount = Math.min(stack.getCount(), emptyCount);
+                simSplit = new SimpleContainer(containerSize);
+                for (int i = 0; i < containerSize; i++) {
+                    simSplit.setItem(i, container.getItem(i).copy());
+                }
+                int placed = 0;
+                for (int i = 0; i < containerSize && placed < splitCount; i++) {
+                    if (container.getItem(i).isEmpty()) {
+                        ItemStack copy = stack.copy();
+                        copy.setCount(1);
+                        simSplit.setItem(i, copy);
+                        placed++;
+                    }
+                }
+                if (this.level != null) {
+                    Container dummy = yzzzfix$getDummyContainer(simSplit);
+                    recipeSplit = this.level.getRecipeManager()
+                            .getAllRecipesFor((RecipeType<BrazierRecipe>) ModRecipeSerializer.BRAZIER_TYPE.get())
+                            .stream().filter(r -> r.matches(dummy, this.level)).findFirst().orElse(null);
+                }
             }
         }
 
-        Container dummyForMatch = yzzzfix$getDummyContainer(simulated);
-        BrazierRecipe matchedRecipe = null;
-        if (this.level != null) {
-            matchedRecipe = this.level.getRecipeManager()
-                    .getAllRecipesFor((RecipeType<BrazierRecipe>) ModRecipeSerializer.BRAZIER_TYPE.get())
-                    .stream().filter(r -> r.matches(dummyForMatch, this.level)).findFirst().orElse(null);
+        if (sameItemSlot != -1) {
+            simStack = new SimpleContainer(containerSize);
+            for (int i = 0; i < containerSize; i++) {
+                if (i == sameItemSlot) {
+                    ItemStack copy = stack.copy();
+                    copy.setCount(container.getItem(i).getCount() + Math.min(spaceInSameSlot, stack.getCount()));
+                    simStack.setItem(i, copy);
+                } else {
+                    simStack.setItem(i, container.getItem(i).copy());
+                }
+            }
+            if (this.level != null) {
+                Container dummy = yzzzfix$getDummyContainer(simStack);
+                recipeStack = this.level.getRecipeManager()
+                        .getAllRecipesFor((RecipeType<BrazierRecipe>) ModRecipeSerializer.BRAZIER_TYPE.get())
+                        .stream().filter(r -> r.matches(dummy, this.level)).findFirst().orElse(null);
+            }
+        }
+
+        int targetSlot;
+        int toAdd;
+        BrazierRecipe matchedRecipe;
+        SimpleContainer simulated;
+
+        // 决策优先级：拆分匹配 > 空格匹配且堆叠不匹配 > 堆叠匹配 > 空格 > 堆叠
+        if (recipeSplit != null) {
+            // 拆分能匹配配方（典型场景：A+C + B(2) → 拆分 B 到两格匹配 A+B+B+C）
+            targetSlot = emptySlot;
+            toAdd = 1;
+            matchedRecipe = recipeSplit;
+            simulated = simSplit;
+        } else if (recipeEmpty != null && recipeStack == null) {
+            targetSlot = emptySlot;
+            toAdd = stack.getCount();
+            matchedRecipe = recipeEmpty;
+            simulated = simEmpty;
+        } else if (recipeStack != null) {
+            targetSlot = sameItemSlot;
+            toAdd = Math.min(spaceInSameSlot, stack.getCount());
+            matchedRecipe = recipeStack;
+            simulated = simStack;
+        } else if (emptySlot != -1) {
+            targetSlot = emptySlot;
+            toAdd = stack.getCount();
+            matchedRecipe = null;
+            simulated = simEmpty;
+        } else {
+            targetSlot = sameItemSlot;
+            toAdd = Math.min(spaceInSameSlot, stack.getCount());
+            matchedRecipe = null;
+            simulated = simStack;
+        }
+
+        // 所有路径都不匹配时，尝试重分配：把已有 count>1 的槽位"借"1个到空格，
+        // 解决 A + B(2) + C 场景中 B(2) 占一格导致配方看不到第二个 B 的问题
+        int redistSrcSlot = -1;
+        int redistDstSlot = -1;
+        if (matchedRecipe == null && emptySlot != -1 && emptyCount >= 2) {
+            for (int i = 0; i < containerSize && redistSrcSlot == -1; i++) {
+                ItemStack slotStack = container.getItem(i);
+                if (!slotStack.isEmpty() && slotStack.getCount() > 1) {
+                    // 找一个空格放"借"出来的 1 个
+                    int dstSlot = -1;
+                    for (int j = 0; j < containerSize; j++) {
+                        if (j != emptySlot && container.getItem(j).isEmpty()) {
+                            dstSlot = j;
+                            break;
+                        }
+                    }
+                    if (dstSlot != -1) {
+                        // 模拟：从 i 移 1 个到 dstSlot，新物品放入 emptySlot
+                        SimpleContainer redistSim = new SimpleContainer(containerSize);
+                        for (int j = 0; j < containerSize; j++) {
+                            if (j == i) {
+                                ItemStack copy = slotStack.copy();
+                                copy.setCount(slotStack.getCount() - 1);
+                                redistSim.setItem(j, copy);
+                            } else if (j == dstSlot) {
+                                ItemStack copy = slotStack.copy();
+                                copy.setCount(1);
+                                redistSim.setItem(j, copy);
+                            } else if (j == emptySlot) {
+                                ItemStack copy = stack.copy();
+                                copy.setCount(stack.getCount());
+                                redistSim.setItem(j, copy);
+                            } else {
+                                redistSim.setItem(j, container.getItem(j).copy());
+                            }
+                        }
+                        if (this.level != null) {
+                            Container dummy = yzzzfix$getDummyContainer(redistSim);
+                            BrazierRecipe redistRecipe = this.level.getRecipeManager()
+                                    .getAllRecipesFor((RecipeType<BrazierRecipe>) ModRecipeSerializer.BRAZIER_TYPE.get())
+                                    .stream().filter(r -> r.matches(dummy, this.level)).findFirst().orElse(null);
+                            if (redistRecipe != null) {
+                                redistSrcSlot = i;
+                                redistDstSlot = dstSlot;
+                                matchedRecipe = redistRecipe;
+                                simulated = redistSim;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (toAdd <= 0) {
+            cir.setReturnValue(false);
+            return;
+        }
+
+        // 执行重分配：从 redistSrcSlot 移 1 个到 redistDstSlot
+        if (redistSrcSlot != -1) {
+            container.getItem(redistSrcSlot).shrink(1);
+            ItemStack moved = container.getItem(redistSrcSlot).copy();
+            moved.setCount(1);
+            container.setItem(redistDstSlot, moved);
+            container.getItem(redistDstSlot).setCount(1);
         }
 
         if (matchedRecipe != null) {
@@ -317,7 +470,8 @@ public abstract class NecroBrazierBlockEntityMixin extends ModBlockEntity {
                 }
 
                 if (simBatchSize > maxBatchBySouls) {
-                    int allowedToAdd = maxBatchBySouls - container.getItem(targetSlot).getCount();
+                    int currentSlotCount = container.getItem(targetSlot).getCount();
+                    int allowedToAdd = maxBatchBySouls - currentSlotCount;
                     if (allowedToAdd <= 0) {
                         if (player != null && this.level != null && !this.level.isClientSide) {
                             player.displayClientMessage(Component.literal("受可用灵魂能量限制，无法放入更多该材料").withStyle(ChatFormatting.RED), true);
@@ -325,7 +479,7 @@ public abstract class NecroBrazierBlockEntityMixin extends ModBlockEntity {
                         cir.setReturnValue(false);
                         return;
                     }
-                    toAdd = allowedToAdd;
+                    toAdd = Math.min(toAdd, allowedToAdd);
                     if (player != null && this.level != null && !this.level.isClientSide) {
                         player.displayClientMessage(Component.literal("受可用灵魂能量限制，自动拦截，仅放入 " + toAdd + " 个 (本次最多合成 " + maxBatchBySouls + " 个)").withStyle(ChatFormatting.YELLOW), true);
                     }
@@ -333,18 +487,34 @@ public abstract class NecroBrazierBlockEntityMixin extends ModBlockEntity {
             }
         }
 
-        ItemStack targetStack = container.getItem(targetSlot);
-        if (targetStack.isEmpty()) {
-            ItemStack newStack = stack.copy();
-            newStack.setCount(toAdd);
-            container.setItem(targetSlot, newStack);
-            container.getItem(targetSlot).setCount(toAdd);
+        // 实际写入容器：拆分路径需要写多个槽位
+        if (simulated == simSplit && splitCount > 1) {
+            int placed = 0;
+            for (int i = 0; i < containerSize && placed < splitCount; i++) {
+                if (container.getItem(i).isEmpty()) {
+                    ItemStack newStack = stack.copy();
+                    newStack.setCount(1);
+                    container.setItem(i, newStack);
+                    container.getItem(i).setCount(1);
+                    placed++;
+                }
+            }
+            if (player == null || !player.getAbilities().instabuild) {
+                stack.shrink(placed);
+            }
         } else {
-            targetStack.grow(toAdd);
-        }
-
-        if (player == null || !player.getAbilities().instabuild) {
-            stack.shrink(toAdd);
+            ItemStack targetStack = container.getItem(targetSlot);
+            if (targetStack.isEmpty()) {
+                ItemStack newStack = stack.copy();
+                newStack.setCount(toAdd);
+                container.setItem(targetSlot, newStack);
+                container.getItem(targetSlot).setCount(toAdd);
+            } else {
+                targetStack.grow(toAdd);
+            }
+            if (player == null || !player.getAbilities().instabuild) {
+                stack.shrink(toAdd);
+            }
         }
 
         if (this.level != null) {
