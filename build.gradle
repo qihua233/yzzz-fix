@@ -67,7 +67,14 @@ dependencies {
                     'mowziesmobs-1.7.3.jar',
                     'Apotheosis-1.20.1-7.4.3.jar',
                     'immortalers_delight-1.20.1-forge-1.1.1.jar',
-                    'goety-2.5.46.3.jar'
+                    'goety-2.5.46.3.jar',
+                    'touhoulittlemaid_spell-1.6.3.4-forge+mc1.20.1.jar',
+                    'BOMD-Forge-1.20.1-1.1.2.jar',
+                    'meetyourfight-1.20.1-1.4.4.jar',
+                    'mowziesmobs-1.7.3.jar',
+                    'Projectile immune penetration-1.20.1-1.5.4-SNAPSHOT.jar',
+                    'pmmo-1.20.1-1.6.33.jar',
+                    'pmmo_repair-1.20.1-1.5-SNAPSHOT.jar'
             ]
     )
 
@@ -79,6 +86,14 @@ dependencies {
     compileOnly fg.deobf(files("libs/Apotheosis-1.20.1-7.4.3.jar"))
     compileOnly fg.deobf(files("libs/immortalers_delight-1.20.1-forge-1.1.1.jar"))
     compileOnly fg.deobf(files("libs/goety-2.5.46.3.jar"))
+    compileOnly fg.deobf(files("libs/touhoulittlemaid_spell-1.6.3.4-forge+mc1.20.1.jar"))
+    compileOnly fg.deobf(files("libs/BOMD-Forge-1.20.1-1.1.2.jar"))
+    compileOnly fg.deobf(files("libs/meetyourfight-1.20.1-1.4.4.jar"))
+    compileOnly fg.deobf(files("libs/mowziesmobs-1.7.3.jar"))
+    compileOnly fg.deobf(files("libs/Projectile immune penetration-1.20.1-1.5.4-SNAPSHOT.jar"))
+    compileOnly fg.deobf(files("libs/pmmo-1.20.1-1.6.33.jar"))
+    compileOnly fg.deobf(files("libs/pmmo_repair-1.20.1-1.5-SNAPSHOT.jar"))
+
     compileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
 

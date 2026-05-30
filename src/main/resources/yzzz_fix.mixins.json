@@ -36,7 +36,6 @@
     "goety.CursedCageBlockEntityMixin",
     "goety.HandleKillMixin",
     "goety.NecroBrazierBlockEntityMixin",
-    "goety.SEHelperMixin",
     "goety.SoulCandlestickBlockEntityMixin",
     "goety.SoulMultiplyMixin",
     "illager_additions.BlastionerMarkProjectileMixin",
@@ -70,8 +69,8 @@
     "apotheosis_spawner.LevelRendererMixin",
     "eidolon_hearts.EidolonHeartsMixin",
     "elementalcombat_jade.CombatDataLayerComponentMixin",
+    "embed.PoseStackMixin",
     "forbidden_arcanus.ForbiddenArcanusJEIPluginMixin",
-    "goety.SEUpdatePacketMixin",
     "immortalers_delight.JEIImmortalersDelightPluginMixin"
   ],
   "injectors": {
