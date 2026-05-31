@@ -74,7 +74,9 @@
     "elementalcombat_jade.CombatDataLayerComponentMixin",
     "forbidden_arcanus.ForbiddenArcanusJEIPluginMixin",
     "goety.SEUpdatePacketMixin",
-    "immortalers_delight.JEIImmortalersDelightPluginMixin"
+    "immortalers_delight.JEIImmortalersDelightPluginMixin",
+    "refinedstorage.CraftingGridBehaviorMixin",
+    "refinedstorage.IngredientTrackerMixin"
   ],
   "injectors": {
     "defaultRequire": 0
