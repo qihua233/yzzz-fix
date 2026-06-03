@@ -7,6 +7,7 @@
   "plugin": "me.realseek.yzzzfix.mixin.YzzzFixMixinPlugin",
   "mixins": [
     "aetherworks.AetheriometerChunkCapabilityMixin",
+    "ak.LazyOptionalNullFix",
     "apotheosis_gateway.BossWaveEntityMixin",
     "apotheosis_spawner.ApothSpawnerTileMixin",
     "apotheosis_spawner.MowzieEntityMixin",
@@ -59,6 +60,7 @@
     "moonstone.BloodEntityMixin",
     "moonstone.BloodMagicBoxMixin",
     "null_blockstate.LevelMixin",
+    "reliquary.FertileLilyPadBlockMixin",
     "reliquary_lyssa.LyssaHookMixin",
     "reliquary_lyssa.RodOfLyssaItemMixin",
     "revelationfix.ClassHandlerMixin",

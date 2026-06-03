@@ -130,7 +130,9 @@ public final class ModuleRegistry {
                     ),
                     ModuleRuntimeHooks.NOOP
             ),
-            module("refinedstorage", "Refined Storage JEI Fix", "refinedstorage_fix", List.of("refinedstorage"))
+            module("refinedstorage", "Refined Storage JEI Fix", "refinedstorage_fix", List.of("refinedstorage")),
+            module("ak", "AK Inventory Fix", "ak_fix", List.of("ak")),
+            module("reliquary_fertile", "Reliquary Fertile Lilypad Fix", "reliquary_fertile_fix", List.of("reliquary"))
             );
 
     private ModuleRegistry() {
