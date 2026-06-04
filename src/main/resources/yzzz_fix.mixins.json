@@ -34,6 +34,7 @@
     "farmingforblockheads.MarketListMessageHandlerMixin",
     "farmingforblockheads.MarketMenuMixin",
     "forbidden_arcanus.HephaestusForgeBlockMixin",
+    "ftbquests.ClaimRewardMessageMixin",
     "goety.CursedCageBlockEntityMixin",
     "goety.HandleKillMixin",
     "goety.NecroBrazierBlockEntityMixin",
@@ -54,6 +55,8 @@
     "maid_targeting.MixinMaidRangedWalkToTarget",
     "maid_targeting.MixinMaidAttackStrafingTask",
     "malum.SpiritHarvestHandlerMixin",
+    "minecraft.GoalSelectorSafeMixin",
+    "minecraft.LivingEntitySafeMixin",
     "mokels.MokelsBossMantydModMixin",
     "mokels.MokelsBossMantydTickMixin",
     "moonstone.AllEventBeaconMixin",
@@ -68,6 +71,7 @@
     "ritual_manager_npe.RitualManagerSaveFixMixin",
     "rough_blade.SummonSwordPROEntityMixin",
     "slashbladeresharped.ConcentrationRankMixin",
+    "slashbladeresharped.EntityHeavyRainSwordsMixin",
     "yhc.ServerPlayerMixin"
   ],
   "client": [

@@ -132,7 +132,9 @@ public final class ModuleRegistry {
             ),
             module("refinedstorage", "Refined Storage JEI Fix", "refinedstorage_fix", List.of("refinedstorage")),
             module("ak", "AK Inventory Fix", "ak_fix", List.of("ak")),
-            module("reliquary_fertile", "Reliquary Fertile Lilypad Fix", "reliquary_fertile_fix", List.of("reliquary"))
+            module("reliquary_fertile", "Reliquary Fertile Lilypad Fix", "reliquary_fertile_fix", List.of("reliquary")),
+            module("minecraft", "LivingEntity & GoalSelector Fix", "LivingEntity_and_GoalSelector_Fix", List.of("minecraft")),
+            module("ftbquests", "FTB Quests Claim Fix", "ftbquests_claim_fix", List.of("ftbquests"))
             );
 
     private ModuleRegistry() {
