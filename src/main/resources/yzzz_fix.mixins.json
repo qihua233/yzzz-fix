@@ -7,6 +7,8 @@
   "plugin": "me.realseek.yzzzfix.mixin.YzzzFixMixinPlugin",
   "mixins": [
     "aetherworks.AetheriometerChunkCapabilityMixin",
+    "ak.LazyOptionalNullFix",
+    "ancient_ones.AmethystColossusEntityMixin",
     "apotheosis_gateway.BossWaveEntityMixin",
     "apotheosis_spawner.ApothSpawnerTileMixin",
     "apotheosis_spawner.MowzieEntityMixin",
@@ -53,12 +55,15 @@
     "maid_targeting.MixinMaidRangedWalkToTarget",
     "maid_targeting.MixinMaidAttackStrafingTask",
     "malum.SpiritHarvestHandlerMixin",
+    "minecraft.LivingEntitySafeMixin",
     "mokels.MokelsBossMantydModMixin",
     "mokels.MokelsBossMantydTickMixin",
     "moonstone.AllEventBeaconMixin",
     "moonstone.BloodEntityMixin",
     "moonstone.BloodMagicBoxMixin",
+    "mutant_monsters.MobDistanceNullSafeMixin",
     "null_blockstate.LevelMixin",
+    "reliquary.FertileLilyPadBlockMixin",
     "reliquary_lyssa.LyssaHookMixin",
     "reliquary_lyssa.RodOfLyssaItemMixin",
     "revelationfix.ClassHandlerMixin",
@@ -66,6 +71,7 @@
     "ritual_manager_npe.RitualManagerSaveFixMixin",
     "rough_blade.SummonSwordPROEntityMixin",
     "slashbladeresharped.ConcentrationRankMixin",
+    "slashbladeresharped.EntityHeavyRainSwordsMixin",
     "yhc.ServerPlayerMixin"
   ],
   "client": [
