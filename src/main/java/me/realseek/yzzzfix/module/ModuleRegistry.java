@@ -134,7 +134,9 @@ public final class ModuleRegistry {
             module("ak", "AK Inventory Fix", "ak_fix", List.of("ak")),
             module("reliquary_fertile", "Reliquary Fertile Lilypad Fix", "reliquary_fertile_fix", List.of("reliquary")),
             module("minecraft", "LivingEntity & GoalSelector Fix", "LivingEntity_and_GoalSelector_Fix", List.of("minecraft")),
-            module("ftbquests", "FTB Quests Claim Fix", "ftbquests_claim_fix", List.of("ftbquests"))
+            module("ftbquests", "FTB Quests Claim Fix", "ftbquests_claim_fix", List.of("ftbquests")),
+            module("mutant_monsters", "Mutant Monsters NPE Fix", "mutant_monsters_fix", List.of("mutantmonsters")),
+            module("ancient_ones", "Ancient Ones NPE Fix", "ancient_ones_fix", List.of("ancientones"))
             );
 
     private ModuleRegistry() {

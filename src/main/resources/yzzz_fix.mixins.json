@@ -8,6 +8,7 @@
   "mixins": [
     "aetherworks.AetheriometerChunkCapabilityMixin",
     "ak.LazyOptionalNullFix",
+    "ancient_ones.AmethystColossusEntityMixin",
     "apotheosis_gateway.BossWaveEntityMixin",
     "apotheosis_spawner.ApothSpawnerTileMixin",
     "apotheosis_spawner.MowzieEntityMixin",
@@ -60,6 +61,7 @@
     "moonstone.AllEventBeaconMixin",
     "moonstone.BloodEntityMixin",
     "moonstone.BloodMagicBoxMixin",
+    "mutant_monsters.MobDistanceNullSafeMixin",
     "null_blockstate.LevelMixin",
     "reliquary.FertileLilyPadBlockMixin",
     "reliquary_lyssa.LyssaHookMixin",
