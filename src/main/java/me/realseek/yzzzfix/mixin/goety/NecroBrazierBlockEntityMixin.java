@@ -146,13 +146,11 @@ public abstract class NecroBrazierBlockEntityMixin extends ModBlockEntity {
                     if (be instanceof SoulCandlestickBlockEntity candlestick) {
                         int souls = candlestick.getSouls();
                         if (souls > 0) {
-                            int before = candlestick.getSouls();
-                            int toDrain = Math.min(before, amountRequired - drained);
-                            for (int c = 0; c < toDrain; c++) {
-                                candlestick.drainSouls(1, pos);
-                            }
-                            int after = candlestick.getSouls();
-                            drained += (before - after);
+                            int toDrain = Math.min(souls, amountRequired - drained);
+                            candlestick.drainSouls(toDrain, pos);
+                            // 进度按 raw amount 累加，折扣减免由 Goety 内部
+                            // SEHelper.decreaseSouls 处理，不影响合成进度计数
+                            drained += toDrain;
                             if (drained >= amountRequired) return drained;
                         }
                     }
@@ -187,10 +185,25 @@ public abstract class NecroBrazierBlockEntityMixin extends ModBlockEntity {
                     int before = candle.getSouls();
                     candle.drainSouls(1, this.getBlockPos());
                     int after = candle.getSouls();
-                    actuallyGathered += (before - after);
+                    int drained = before - after;
+                    // ISoulDiscount 会使 (int)(1 * discount) 截断为 0，导致扣除量
+                    // 与进度脱钩。此处将"灵魂存在但未实际扣除"视为折扣免费
+                    // 放行，计入合成进度。
+                    if (drained == 0 && before > 0) {
+                        drained = 1;
+                    }
+                    actuallyGathered += drained;
                 }
             }
             this.currentTime += actuallyGathered;
+
+            // 空转检测：没有吸到任何灵魂时，说明能量源已耗尽（玩家 SE 归零且
+            // 无图腾兜底），及时结算以避免火炉无限等待。
+            if (actuallyGathered == 0) {
+                this.candlestickBlockEntityList.clear();
+                this.stopBrazier(this.currentTime > 0);
+                return;
+            }
         }
 
         // 清空容器，向原版的老循环移交空迭代器

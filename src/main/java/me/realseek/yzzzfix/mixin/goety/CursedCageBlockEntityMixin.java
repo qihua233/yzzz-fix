@@ -1,7 +1,9 @@
 package me.realseek.yzzzfix.mixin.goety;
 
+import com.Polarice3.Goety.api.items.magic.ITotem;
 import com.Polarice3.Goety.common.blocks.entities.CursedCageBlockEntity;
 import com.Polarice3.Goety.common.items.ModItems;
+import com.Polarice3.Goety.utils.SEHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -13,6 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
@@ -50,6 +53,43 @@ public abstract class CursedCageBlockEntityMixin extends BlockEntity {
             }
 
             // 如果是客户端（极少调用，一般用于渲染），不拦截，放行交给原版的同维度查找即可
+        }
+    }
+
+    /**
+     * 将 {@code decreaseSouls} 中无折扣的 {@code SEHelper.decreaseSESouls} 调用
+     * 替换为带 ISoulDiscount 折扣的 {@code SEHelper.decreaseSouls}。
+     *
+     * <p>原版火炉始终扣全量灵魂，无视玩家盔甲的减免属性。
+     * 此重定向让火炉与法术共用同一套折扣逻辑——灵魂减免堆满 100% 即为免费合成。</p>
+     */
+    @Redirect(
+            method = "decreaseSouls",
+            at = @At(value = "INVOKE", target = "Lcom/Polarice3/Goety/utils/SEHelper;decreaseSESouls(Lnet/minecraft/world/entity/player/Player;I)Z")
+    )
+    private boolean yzzzfix$applySoulDiscount(Player player, int amount) {
+        SEHelper.decreaseSouls(player, amount);
+        return true;
+    }
+
+    /**
+     * 修复 {@code getSouls()} 在灵魂能量系统激活时只返回玩家 SE 而忽略图腾 NBT 的问题。
+     *
+     * <p>当玩家激活灵魂方舟后，原版 {@code getSouls()} 会直接返回
+     * {@code SEHelper.getSESouls(player)}，完全绕开图腾 NBT。
+     * 若玩家 SE 为 0（刚激活或已耗尽），即使图腾 NBT 存储了大量灵魂，
+     * 蜡烛的 {@code drainSouls} 检查也会失败，导致亡灵火炉永远无法完成合成。</p>
+     */
+    @Inject(method = "getSouls", at = @At("RETURN"), cancellable = true)
+    private void yzzzfix$fixGetSouls(CallbackInfoReturnable<Integer> cir) {
+        if (cir.getReturnValue() > 0) return;
+
+        ItemStack item = this.getItem();
+        if (item != null && item.getItem() instanceof ITotem && item.hasTag()) {
+            int totemSouls = item.getTag().getInt("Souls");
+            if (totemSouls > 0) {
+                cir.setReturnValue(totemSouls);
+            }
         }
     }
 }
