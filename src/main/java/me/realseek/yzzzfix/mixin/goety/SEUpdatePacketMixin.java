@@ -5,7 +5,6 @@ import com.Polarice3.Goety.common.capabilities.soulenergy.SEUpdatePacket;
 import com.Polarice3.Goety.utils.SEHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,11 +18,14 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
- * 修复 SEUpdatePacket 客户端接收时的 UUID 校验。
+ * 修复 SEUpdatePacket 广播导致的 HUD 闪烁。
  *
- * <p>原版 {@code consume} 始终将灵魂能量数据写入 {@code Goety.PROXY.getPlayer()}
- * （即本地玩家），广播时所有客户端都会把别人的数据覆盖到自己的 capability 上，
- * 造成 HUD 闪烁。本 Mixin 改为按 {@code packet.PlayerUUID} 查找对应的玩家实体再写入。</p>
+ * <p>原版 {@code consume} 通过 {@code Goety.PROXY.getPlayer()} 将数据写入本地玩家，
+ * 当服务器向所有客户端广播每个玩家的心魂能量包时，非本地玩家的数据会覆盖本地玩家的数据，
+ * 导致 HUD 闪烁。</p>
+ *
+ * <p>本 Mixin 在写入前校验 {@code PlayerUUID} 是否与本地玩家匹配，
+ * 不匹配的包直接丢弃，消除跨玩家数据污染。</p>
  */
 @Mixin(value = SEUpdatePacket.class, remap = false)
 public class SEUpdatePacketMixin {
@@ -40,29 +42,40 @@ public class SEUpdatePacketMixin {
             TAG = SEUpdatePacket.class.getDeclaredField("tag");
             TAG.setAccessible(true);
         } catch (NoSuchFieldException e) {
-            throw new RuntimeException("Failed to reflect SEUpdatePacket fields", e);
+            throw new RuntimeException("[YzzzFix] Failed to reflect SEUpdatePacket fields", e);
         }
     }
 
     @Inject(method = "consume", at = @At("HEAD"), cancellable = true, remap = false)
-    private static void yzzzfix$consumeWithUuidCheck(SEUpdatePacket packet, Supplier<NetworkEvent.Context> ctxSupplier, CallbackInfo ci) {
-        NetworkEvent.Context ctx = ctxSupplier.get();
-        ctx.enqueueWork(() -> {
-            if (ctx.getDirection() != NetworkDirection.PLAY_TO_CLIENT) return;
-            try {
-                UUID uuid = (UUID) PLAYER_UUID.get(packet);
-                if (uuid == null) return;
-                if (Minecraft.getInstance().level == null) return;
-                Player player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
-                if (player == null) return;
-                player.getCapability(SEProvider.CAPABILITY).ifPresent(ise -> {
-                    try {
-                        SEHelper.load((CompoundTag) TAG.get(packet), ise);
-                    } catch (Exception ignored) {}
-                });
-            } catch (Exception ignored) {}
-        });
-        ctx.setPacketHandled(true);
+    private static void yzzzfix$redirectConsume(
+            SEUpdatePacket packet,
+            Supplier<NetworkEvent.Context> ctxSupplier,
+            CallbackInfo ci
+    ) {
         ci.cancel();
+        NetworkEvent.Context ctx = ctxSupplier.get();
+        ctx.setPacketHandled(true);
+
+        if (ctx.getDirection() != NetworkDirection.PLAY_TO_CLIENT) {
+            return;
+        }
+
+        ctx.enqueueWork(() -> {
+            try {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player == null) return;
+
+                UUID uuid = (UUID) PLAYER_UUID.get(packet);
+                CompoundTag tag = (CompoundTag) TAG.get(packet);
+
+                if (uuid == null || tag == null) return;
+                if (!mc.player.getUUID().equals(uuid)) return;
+
+                mc.player.getCapability(SEProvider.CAPABILITY).ifPresent(cap -> {
+                    SEHelper.load(tag, cap);
+                });
+            } catch (Exception ignored) {
+            }
+        });
     }
 }

@@ -27,12 +27,16 @@ import java.lang.reflect.Field;
  * 且 {@code EnderDragon#hurt(DamageSource, float)} 被重写为转发到
  * {@code hurt(this.body, source, amount)}，导致在
  * {@code EnderDragonPart#hurt} RETURN 点之外补施加伤害的任何尝试均被
- * 重定向回同一 Player 门禁，形成死循环。</p>
+ * 重定向回同一 Player 身份门禁，形成死循环。</p>
  *
  * <p>该 Mixin 在 {@code hurt(EnderDragonPart, DamageSource, float)} 入口
  * 通过 {@code cancellable = true} 接管全部处理：追溯投射物所有者链定位
  * 真正攻击者，识别玩家拥有的可驯服生物后直接复制原版伤害计算与结算逻辑，
  * 通过 {@code setHealth} 绕过 Player 身份校验。</p>
+ *
+ * <p>在伤害结算前调用 {@code setLastHurtByMob(player)} 直接记录玩家为击杀者，
+ * 确保末影龙死亡时 {@code getKillCredit()} 返回玩家实体，
+ * 龙战管理器（{@code DragonFight}）能正确发放奖励（龙蛋、返回传送门、经验）。</p>
  */
 @Mixin(value = EnderDragon.class, remap = false)
 public abstract class MixinEnderDragonMaidDamage extends Mob {
@@ -41,16 +45,11 @@ public abstract class MixinEnderDragonMaidDamage extends Mob {
         super(entityType, level);
     }
 
-    // 严格遵循规范 3.1：缓存反射字段，避免每 Tick 扫描引发 TPS 灾难
     @Unique
     private static Field yzzzfix$sittingDamageField;
     @Unique
     private static boolean yzzzfix$fieldSearched = false;
 
-    /**
-     * 在 {@code hurt(EnderDragonPart, DamageSource, float)} 入口接管
-     * 非 Player 来源的伤害裁定。
-     */
     @Inject(
             method = {
                     "hurt(Lnet/minecraft/world/entity/boss/EnderDragonPart;Lnet/minecraft/world/damagesource/DamageSource;F)Z",
@@ -70,10 +69,9 @@ public abstract class MixinEnderDragonMaidDamage extends Mob {
             attacker = yzzzfix$resolveOwner(source.getDirectEntity());
         }
 
-        if (!(attacker instanceof TamableAnimal tamable) || !(tamable.getOwner() instanceof Player)) {
+        if (!(attacker instanceof TamableAnimal tamable) || !(tamable.getOwner() instanceof Player player)) {
             return;
         }
-
 
         EnderDragon dragon = EnderDragon.class.cast(this);
 
@@ -92,6 +90,7 @@ public abstract class MixinEnderDragonMaidDamage extends Mob {
             return;
         }
 
+        dragon.setLastHurtByMob(player);
         float healthBefore = dragon.getHealth();
         dragon.setHealth(healthBefore - modified);
 
@@ -110,19 +109,14 @@ public abstract class MixinEnderDragonMaidDamage extends Mob {
         cir.setReturnValue(true);
     }
 
-    /**
-     * 高性能缓存反射：处理无 refmap 环境下的私有字段修改
-     */
     @Unique
     private static void yzzzfix$accumulateSittingDamage(EnderDragon dragon, float damage) {
         try {
             if (!yzzzfix$fieldSearched) {
                 try {
-                    // 尝试获取开发环境 (Mojmap) 字段
                     yzzzfix$sittingDamageField = EnderDragon.class.getDeclaredField("sittingDamageReceived");
                 } catch (NoSuchFieldException e) {
                     try {
-                        // 尝试获取 1.20.1 生产环境 (SRG) 字段
                         yzzzfix$sittingDamageField = EnderDragon.class.getDeclaredField("f_31102_");
                     } catch (NoSuchFieldException ignored) {}
                 }
@@ -143,42 +137,29 @@ public abstract class MixinEnderDragonMaidDamage extends Mob {
                 }
             }
         } catch (Exception ignored) {
-            // 反射彻底失败时静默跳过，符合阻断式防崩溃规范
         }
     }
 
-    /**
-     * 追溯投射物或实体的真实所属玩家（若存在）。
-     *
-     * <p>采用带有最大深度限制的迭代算法，彻底杜绝由于第三方模组（如 Goety）
-     * 投射物所有权死循环（Self-referencing 或循环引用）导致的 StackOverflowError。</p>
-     */
     @Unique
     private static Entity yzzzfix$resolveOwner(Entity entity) {
         Entity current = entity;
-        int depth = 0; // 防护断路器：最大查找深度
+        int depth = 0;
 
-        // 最多往上追溯 10 层，超过直接熔断放弃，绝对防崩溃
         while (current != null && depth < 10) {
-            // 如果找到了被玩家驯服的生物，直接返回它
             if (current instanceof TamableAnimal tamable && tamable.getOwner() instanceof Player) {
                 return current;
             }
-            // 如果是投射物，继续往上找主人
             if (current instanceof Projectile projectile) {
                 Entity owner = projectile.getOwner();
-                // 防御性编程：如果投射物的主人是它自己，立刻打断，防止死循环
                 if (owner == current) {
                     break;
                 }
                 current = owner;
             } else {
-                // 既不是宠物也不是投射物，线索中断
                 break;
             }
-
             depth++;
         }
-        return null; // 没找到合法的来源
+        return null;
     }
 }
