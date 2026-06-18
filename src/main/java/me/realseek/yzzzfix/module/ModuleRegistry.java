@@ -139,6 +139,7 @@ public final class ModuleRegistry {
             module("ftbquests", "FTB Quests Claim Fix", "ftbquests_claim_fix", List.of("ftbquests")),
             module("mutant_monsters", "Mutant Monsters NPE Fix", "mutant_monsters_fix", List.of("mutantmonsters")),
             module("ancient_ones", "Ancient Ones NPE Fix", "ancient_ones_fix", List.of("ancient_ones")),
+            module("majruszsdifficulty", "Majrusz's Difficulty Fix", "majruszsdifficulty_fix", List.of("majruszsdifficulty")),
             module("sunspirit", "Sun Spirit Balance Fix", "sunspirit_fix", List.of("aether"))
             );
 

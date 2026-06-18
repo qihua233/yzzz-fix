@@ -52,6 +52,7 @@
     "illager_additions.BlastionerMarkProjectileMixin",
     "immortalers_delight.EnchantalCoolerBlockEntityMixin",
     "immortalers_delight.EnchantalCoolerSerializerMixin",
+    "immortalers_delight.EnchantalCoolerSyncMixin",
     "irons_spellbooks.AbstractMagicProjectileMixin",
     "irons_spellbooks.LurkerRingCooldownMixin",
     "lychee_offhand.BrushItemMixin",
@@ -90,6 +91,7 @@
     "forbidden_arcanus.ForbiddenArcanusJEIPluginMixin",
     "goety.SEUpdatePacketMixin",
     "immortalers_delight.JEIImmortalersDelightPluginMixin",
+    "majruszsdifficulty.TreasureBagClientMixin",
     "refinedstorage.CraftingGridBehaviorMixin",
     "refinedstorage.IngredientTrackerMixin"
   ],
