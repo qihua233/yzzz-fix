@@ -17,5 +17,6 @@ public final class EnigmaticAddonsModule implements ModuleRuntimeHooks {
     @Override
     public void initCommon() {
         MinecraftForge.EVENT_BUS.register(AntiqueBagFix.class);
+        MinecraftForge.EVENT_BUS.register(MagicQuartzFlowerBindingFix.class);
     }
 }

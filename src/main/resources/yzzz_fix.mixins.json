@@ -40,6 +40,7 @@
     "endinglib.MobEffectUtilsMixin",
     "enigmatic_totem.BetterTotemCompatMixin",
     "enigmaticaddons.AbstractBrewingRecipeMixin",
+    "enigmaticaddons.CelestialArtifactsUseItemMixin",
     "farmingforblockheads.MarketListMessageHandlerMixin",
     "farmingforblockheads.MarketMenuMixin",
     "forbidden_arcanus.HephaestusForgeBlockMixin",
@@ -62,6 +63,7 @@
     "maid_targeting.MixinMaidNearestLivingEntitySensor",
     "maid_targeting.MixinMaidRangedWalkToTarget",
     "maid_targeting.MixinTaskBowAttackAim",
+    "maid_targeting.TouhouLittleMaidBrainMixin",
     "malum.SpiritHarvestHandlerMixin",
     "minecraft.LivingEntitySafeMixin",
     "mokels.MokelsBossMantydModMixin",
@@ -80,6 +82,7 @@
     "rough_blade.SummonSwordPROEntityMixin",
     "slashbladeresharped.ConcentrationRankMixin",
     "slashbladeresharped.EntityHeavyRainSwordsMixin",
+    "slashbladeresharped.SlashBladeProjectilePortalMixin",
     "yhc.ServerPlayerMixin"
   ],
   "client": [
@@ -92,6 +95,7 @@
     "goety.SEUpdatePacketMixin",
     "immortalers_delight.JEIImmortalersDelightPluginMixin",
     "majruszsdifficulty.TreasureBagClientMixin",
+    "modernui.ModernUiGraniteDeviceMixin",
     "refinedstorage.CraftingGridBehaviorMixin",
     "refinedstorage.IngredientTrackerMixin"
   ],
